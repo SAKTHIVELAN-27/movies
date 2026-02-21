@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 const HeroBanner = ({ movies, currentMood }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -12,14 +12,13 @@ const HeroBanner = ({ movies, currentMood }) => {
 
   const currentMovie = featuredMovies[currentIndex] || movies[0];
 
-  useEffect(() => {
-    if (featuredMovies.length > 1) {
-      const interval = setInterval(() => {
-        handleNext();
-      }, 8000);
-      return () => clearInterval(interval);
-    }
-  }, [currentIndex, featuredMovies.length]);
+  const handleNext = useCallback(() => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev === featuredMovies.length - 1 ? 0 : prev + 1));
+      setIsTransitioning(false);
+    }, 300);
+  }, [featuredMovies.length]);
 
   const handlePrev = () => {
     setIsTransitioning(true);
@@ -29,13 +28,14 @@ const HeroBanner = ({ movies, currentMood }) => {
     }, 300);
   };
 
-  const handleNext = () => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev === featuredMovies.length - 1 ? 0 : prev + 1));
-      setIsTransitioning(false);
-    }, 300);
-  };
+  useEffect(() => {
+    if (featuredMovies.length > 1) {
+      const interval = setInterval(() => {
+        handleNext();
+      }, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [featuredMovies.length, handleNext]);
 
   if (!currentMovie) return null;
 
